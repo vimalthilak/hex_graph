@@ -1,4 +1,4 @@
-function p_margin = message_pass(G, f, label_idx, label_y)
+function c_m_cell = pass_message(G, c_p_cell)
 % use sum-product algorithm to compute marginal probability of labels
 % perform two message pass on Junction Tree using depth-first search
 
@@ -31,7 +31,7 @@ root_JT = randperm(num_clq, 1);
 
 msg_cell = cell(num_clq, 1);
 for i = 1:num_clq
-  xsaefl;-=
+  xsaefl;
 end
 
 %% first pass: from leaves to root

@@ -61,7 +61,7 @@ for vid = 1:num_v
   E_elim(:, v) = false;
   E_elim(v, :) = false;
 end
-fprintf('hex.triangularize: junction tree width: %d\n', JT_width);
+fprintf('hex_setup.triangularize: junction tree width: %d\n', JT_width);
 
 % Find maximal cliques from all elimination cliques.
 num_c = length(c_v_cell);
@@ -86,7 +86,7 @@ c_v_cell = c_v_cell(keep);
 num_c = length(c_v_cell);
 G.c_v_cell = c_v_cell;
 G.num_c = num_c;
-fprintf('hex.triangularize: clique number: %d\n', G.num_c);
+fprintf('hex_setup.triangularize: clique number: %d\n', G.num_c);
 
 % Record which cliques a variable appears in, so that it can be marginalized
 % efficiently.

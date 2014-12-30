@@ -35,7 +35,7 @@ end
 
 % Use Kruskal Algorithm to generate maximal spanning tree.
 [E_JT, JT_weight] = kruskal(c_JG_edges);
-fprintf('hex.max_span_tree: junction tree weight: %d\n', JT_weight);
+fprintf('hex_setup.max_span_tree: junction tree weight: %d\n', JT_weight);
 
 % Convert adjacency matrix by performing a depth-first search. Record each
 % clique's parent and children, and clique sequence of up (first) message
@@ -96,6 +96,7 @@ end
 assert(length(up_pass_seq) == num_c);
 G.c_parent_vec = c_parent_vec;
 G.c_children_cell = c_children_cell;
+G.up_pass_seq = up_pass_seq;
 
 end
 

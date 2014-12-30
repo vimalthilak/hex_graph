@@ -29,24 +29,31 @@ for c = 1:num_c
   if c_parent_vec(c) > 0
     c_neighbors = cat(1, c_neighbors, c_parent_vec(c));
   end
+  % states and state number of this clique
   s_mat_this = c_s_cell{c};
   num_s_this = size(s_mat_this, 1);
-  neighbor_s_cell = cell(length(c_neighbors), num_s_this);
   % visit all its neighbors
+  neighbor_s_cell = cell(length(c_neighbors), num_s_this);
   for n = 1:length(c_neighbors)
     c_neighbor = c_neighbors(n);
     v_neighbor = c_v_cell{c_neighbor};
+    % find intersection variables between current clique and neighbor
+    % clique
     [~, vid_this, vid_neighbor] = intersect(v_this, v_neighbor);
+    % states and state number of neighbor clique
     s_mat_neighbor = c_s_cell{c_neighbor};
     num_s_neighbor = size(s_mat_neighbor, 1);
     % for each s in this clique's s table, match it with associated
     % states in the neighbor's s table
     for sid_this = 1:num_s_this
-      partial_s_this = s_mat_this(sid_this, vid_this);
+      % state of intersection variables in this clique
+      intersec_s_this = s_mat_this(sid_this, vid_this);
+      % state id list of matching neighbor states
       sid_match = [];
       for sid_neighbor = 1:num_s_neighbor
-        partial_s_neighbor = s_mat_neighbor(sid_neighbor, vid_neighbor);
-        if all(partial_s_this == partial_s_neighbor)
+        % state of intersection variables in neighbor clique
+        intersec_s_neighbor = s_mat_neighbor(sid_neighbor, vid_neighbor);
+        if all(intersec_s_this == intersec_s_neighbor)
           sid_match = cat(1, sid_match, sid_neighbor);
         end
       end

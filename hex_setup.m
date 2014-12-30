@@ -21,18 +21,18 @@ G.E_e = E_e;
 G.num_v = size(G.E_h, 1);
 
 % Check if the HEX graph is consistent
-hex.check_consistency(G);
+hex_setup.check_consistency(G);
 
 % Set up a HEX Graph for forward pass and backward pass
 % step 1: sparsify and densify a graph
-G = hex.sparsify_and_densify(G);
+G = hex_setup.sparsify_and_densify(G);
 
 % step 2: build junction tree and record 
-G = hex.triangularize(G);
-G = hex.max_span_tree(G);
+G = hex_setup.triangularize(G);
+G = hex_setup.max_span_tree(G);
 
 % step 3: list state space and record sum-product operations
-G = hex.list_state_space(G);
-G = hex.record_sumprod(G);
+G = hex_setup.list_state_space(G);
+G = hex_setup.record_sumprod(G);
 
 end
