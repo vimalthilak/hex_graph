@@ -1,79 +1,101 @@
 function c_m_cell = pass_message(G, c_p_cell)
-% use sum-product algorithm to compute marginal probability of labels
-% perform two message pass on Junction Tree using depth-first search
+% c_m_cell = pass_message(G, c_p_cell)
+%   Perform sum-product message pass (up and down) on Junction Tree
+%
+%   G is the structure containing the whole HEX Graph
+%   c_p_cell contains potential tables of all cliques
+%   c_m_cell contains message tables of all cliques
 
-num_V = size(G.E_u, 1);
+% AUTORIGHTS
+% ---------------------------------------------------------
+% Copyright (c) 2015, Ronghang Hu (huronghang@hotmail.com)
+%
+% This file is part of the HEX Graph code and is available
+% under the terms of the Simplified BSD License provided in
+% LICENSE. Please retain this notice and LICENSE if you use
+% this file (or any portion of it) in your project.
+% ---------------------------------------------------------
 
-% check whether the label is valid
-assert(islogical(label_y));
-assert(length(label_idx) == length(label_y));
-% check for label index range and duplicated label index
-assert(all(label_idx >= 1) && all(label_idx <= num_V));
-assert(length(intersect(label_idx, label_idx)) == length(label_idx));
-% Here we only allow marginalize over one variable
-% TODO (Ronghang Hu): allow computing marginal probability over multiple
-% labels
-assert(length(label_idx) == 1 && length(label_y) == 1);
+num_c = G.num_c;
+c_children_cell = G.c_children_cell;
+c_parent_vec = G.c_parent_vec;
+sumprod_cell = G.sumprod_cell;
+up_pass_seq = G.up_pass_seq;
 
-% Junction Tree
-clq_cell = G.clq_cell;
-num_clq = length(clq_cell);
-E_JT = G.E_JT;
-assert(num_clq == size(E_JT, 1));
-assert(num_clq == size(E_JT, 2));
+% all incoming messages (from its neighbors) of each clique
+c_m_cell = cell(num_c, 1);
 
-% randomly select a node as root
-root_JT = randperm(num_clq, 1);
-
-%% state space and potential table construction for each clique
-% each state is a logical matrix, with each column representing
-% initialize msg_cell, each of which is a vector of length == state_num
-
-msg_cell = cell(num_clq, 1);
-for i = 1:num_clq
-  xsaefl;
-end
-
-%% first pass: from leaves to root
-% and also identify the parent of each clique, and get partition function
-msg_sent = false(num_clq, 1);
-parent_vec = zeros(num_clq, 1); % the parent of root is 0
-sep_cell = cell(num_clq, 1); % the separator between a node and its parents
-
-% depth-first search
-clq_this = root_JT;
-while true
-  neighbours = find(E_JT(:, clq_this));
-  % visit all the children who has not sent message yet.
-  % if no children or all children have sent their message, then send
-  % message and to back to parents. If no parent (root), then stop.
-  go_down = false;
-  for clq_down = 1:length(neighbours)
-    if clq_down ~= parent_vec(clq_this) && ~msg_sent(clq_down)
-      go_down = true;
-      break
+% first pass (up pass): pass message from leaves to root
+for cid = 1:num_c
+  c = up_pass_seq(cid);
+  
+  % order of neighbors: child_1, child_2, ..., parent
+  neighbor_state_cell = sumprod_cell{c};
+  num_neighbor_this = size(neighbor_state_cell, 1);
+  num_state_this = length(c_p_cell{c});
+  
+  % message vector of this clique
+  m_vec_this = zeros(num_neighbor_this, num_state_this);
+  
+  % collect message from children cliques
+  c_children = c_children_cell{c};
+  
+  % loop over each neighbor and each state (of this clique)
+  for cid_neighbor = 1:length(c_children)
+    c_child = c_children(cid_neighbor);
+    % the neighbor's number of (its own) neighbor
+    % collect message from this child
+    for sid_this = 1:num_state_this
+      msg_total = 0;
+      sid_vec_neighbor = neighbor_state_cell{cid_neighbor, sid_this};
+      for i = 1:length(sid_vec_neighbor)
+        sid_neighbor = sid_vec_neighbor(i);
+        p_neighbor = c_p_cell{c_child}(sid_neighbor);
+        
+        % product the message from all (its own) children, but not its parent
+        msg_prod_neighbor = prod(c_m_cell{c_child}(1:end-1, sid_neighbor), 1);
+        msg_total = msg_total + p_neighbor * msg_prod_neighbor;
+      end
+      m_vec_this(cid_neighbor, sid_this) = msg_total;
     end
   end
-  if go_down
-    % set up the parent node and separator of this child
-    parent_vec(clq_down) = clq_this;
-    sep_cell{clq_down} = intersect(clq_cell{clq_down}, clq_cell{clq_this});
-    clq_this = clq_down;
-  elseif parent_vec(clq_this) > 0 % send msg and go up
-    %% College MSG and send up
-    clq_this = parent_vec(clq_this);
-  else
-    %% root has been reached College MSG and calculate the partition function
-    break
+  % set up message cell after passing messages
+  c_m_cell{c} = m_vec_this;
+end
+
+% second pass (down pass): pass message from root to leaves
+% revert the up-pass sequence and skip the root
+for cid = (num_c - 1):-1:1
+  c = up_pass_seq(cid);
+  
+  % order of neighbors: child_1, child_2, ..., parent
+  neighbor_state_cell = sumprod_cell{c};
+  num_state_this = length(c_p_cell{c});
+  
+  m_vec_this = c_m_cell{c};
+  
+  % collect message from parent clique
+  c_parent = c_parent_vec(c);
+  for sid_this = 1:num_state_this
+    msg_total = 0;
+    sid_vec_neighbor = neighbor_state_cell{end, sid_this};
+    for i = 1:length(sid_vec_neighbor)
+      sid_neighbor = sid_vec_neighbor(i);
+      p_neighbor = c_p_cell{c_parent}(sid_neighbor);
+      
+      % TODO (Ronghang Hu): avoid multiplying together messages by
+      % multiplying them one time and divide them (like in HUGIN algorithm)
+      c_children_neighbor = c_children_cell{c_parent};
+      prod_idx = c_children_neighbor ~= c;
+      if c_parent_vec(c_parent) > 0
+        prod_idx = [prod_idx; true]; %#ok<AGROW>
+      end
+      msg_prod_neighbor = prod(c_m_cell{c_parent}(prod_idx, sid_neighbor), 1);
+      
+      msg_total = msg_total + p_neighbor * msg_prod_neighbor;
+    end
+    m_vec_this(end, sid_this) = msg_total;
   end
-end
-
-%% second pass: from root to leaves
-
-end
-
-function msg_cell = send_msg(msg_cell, clq_cell, ids, idr)
-% send message from clq ids to clq idr
-
-
+  % set up message cell after passing messages
+  c_m_cell{c} = m_vec_this;
 end

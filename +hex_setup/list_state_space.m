@@ -31,7 +31,7 @@ c_s_cell = cell(num_c, 1);
 margin_cell = cell(num_c, 1);
 
 % TODO (Ronghang Hu): replace the brute-force approach with more efficient
-% algorithm
+% algorithm. List state space using densified graph
 for c = 1:num_c
   c_v = c_v_cell{c};
   num_v_in_clq = length(c_v);

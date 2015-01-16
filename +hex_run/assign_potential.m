@@ -4,6 +4,7 @@ function c_p_cell = assign_potential(G, f)
 %
 %   G is the structure containing the whole HEX Graph
 %   f is raw scores of all variables
+%   c_p_cell contains potential tables of all cliques
 
 % AUTORIGHTS
 % ---------------------------------------------------------
@@ -16,12 +17,9 @@ function c_p_cell = assign_potential(G, f)
 % ---------------------------------------------------------
 
 c_v_cell = G.c_v_cell;
-num_c = G.num_clength(c_v_cell);
-v_c_cell = G.v_c_cell;
-num_v = G.num_v;
+num_c = G.num_c;
+var_appear_times = G.var_appear_times;
 c_s_cell = G.c_s_cell;
-
-assert(length(f) == num_v);
 
 % create potential table for each clique inside the tree
 c_p_cell = cell(num_c, 1);
@@ -35,7 +33,7 @@ for i = 1:num_c
     energy = 0;
     for vid = 1:num_v_this
       if s_mat_this(sid, vid)
-        energy = energy - f(v_this(vid)) / length(v_c_cell{v_this(vid)});
+        energy = energy - f(v_this(vid)) / var_appear_times(v_this(vid));
       end
     end
     p_vec(sid) = exp(-energy);
