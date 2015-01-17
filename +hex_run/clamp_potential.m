@@ -34,10 +34,12 @@ for cid = 1:length(c_vec_containing_l);
   var_state_cell = margin_cell{c};
   
   % all the states that y_l = 1
-  sid_vec = var_state_cell{c_v_cell{c} == v};
+  vid_idx = (c_v_cell{c} == v);
+  sid_vec = var_state_cell{vid_idx};
   
   % all the states that y_l = 0
-  idx = true(length(c_v_cell{c}), 1);
+  num_state = length(c_p_cell{c});
+  idx = true(num_state, 1);
   idx(sid_vec) = false;
   
   % set the potentials of y_l = 0 states to be zero

@@ -92,7 +92,7 @@ end
 if l > 0
   gradients = gradients_Pr / Pr_margin(l) - gradients_Z / Z;
 else
-  gradients = gradients_Z / Z;
+  gradients = - gradients_Z / Z;
 end
 
 end
