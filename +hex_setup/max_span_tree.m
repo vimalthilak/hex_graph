@@ -16,6 +16,7 @@ function G = max_span_tree(G)
 % ---------------------------------------------------------
 
 c_v_cell = G.c_v_cell;
+num_v = G.num_v;
 num_c = G.num_c;
 
 % Create junction graph and compute edge weights in junction graph. Edges
@@ -34,7 +35,7 @@ for c1 = 1:num_c
 end
 
 % Use Kruskal Algorithm to generate maximal spanning tree.
-[E_JT, JT_weight] = kruskal(c_JG_edges);
+[E_JT, JT_weight] = kruskal(c_JG_edges, num_v);
 fprintf('hex_setup.max_span_tree: junction tree weight: %d\n', JT_weight);
 
 % Convert adjacency matrix by performing a depth-first search. Record each
@@ -100,12 +101,13 @@ G.up_pass_seq = up_pass_seq;
 
 end
 
-function [E_t, w] = kruskal(PV)
-% [E_t, w] = kruskal(PV)
+function [E_t, w] = kruskal(PV, num_v)
+% [E_t, w] = kruskal(PV, num_v)
 %   Kruskal algorithm for finding maximum spanning tree
 %
 %   PV is nx3 martix. 1st and 2nd row's define the edge (2 vertices) and the
 %   3rd is the edge's weight.
+%   num_v is number of vertices
 %   E_t is adjacency matrix of maximum spanning tree
 %   w is maximum spanning tree's weight
 
@@ -113,12 +115,16 @@ function [E_t, w] = kruskal(PV)
 % http://www.mathworks.com/matlabcentral/fileexchange/13457-kruskal-algorithm
 % N.Cheilakos,2006
 
+E_t = false(num_v);
+if size(PV, 1) == 0
+  w = 0;
+  return
+end
+
 num_edge = size(PV,1);
-num_node = max(max(PV(:, 1), max(PV(:, 2))));
 % sort PV by descending weights order.
 PV = fysalida(PV,3);
-korif = zeros(1, num_node);
-E_t = false(num_node);
+korif = zeros(1, num_v);
 insert_vec = true(num_edge, 1);
 for i = 1:num_edge
   % control if we insert edge[i,j] in the graphic. Then the graphic has

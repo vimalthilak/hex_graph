@@ -103,7 +103,7 @@ G.v_c_cell = v_c_cell;
 % record how many times a variable appears
 var_appear_times = zeros(num_v, 1);
 for v = 1:num_v
-  var_appear_times(v) = length(v_c_cell(v));
+  var_appear_times(v) = length(v_c_cell{v});
 end
 G.var_appear_times = var_appear_times;
 

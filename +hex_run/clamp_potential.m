@@ -27,7 +27,8 @@ c_v_cell = G.c_v_cell;
 margin_cell = G.margin_cell;
 
 % set potentials of all states in which y_l = 0 to be zero
-c_vec_containing_l = v_c_cell{l};
+v = l;
+c_vec_containing_l = v_c_cell{v};
 for cid = 1:length(c_vec_containing_l);
   c = c_vec_containing_l(cid);
   var_state_cell = margin_cell{c};
@@ -36,7 +37,7 @@ for cid = 1:length(c_vec_containing_l);
   sid_vec = var_state_cell{c_v_cell{c} == v};
   
   % all the states that y_l = 0
-  idx = true(length(c_v_cell{c}, 1));
+  idx = true(length(c_v_cell{c}), 1);
   idx(sid_vec) = false;
   
   % set the potentials of y_l = 0 states to be zero

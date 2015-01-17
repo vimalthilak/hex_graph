@@ -1,4 +1,4 @@
-function [loss, gradients, p_margin] = hex_run(G, f, l, back_propagate)
+function [loss, gradients, p_margin, p0] = hex_run(G, f, l, back_propagate)
 % [loss, gradients, p_margin] = hex_run(G, f, l, back_propagate)
 %   Compute marginal probability, (log-marginal-likelihood) HEX Loss and
 %   loss gradient w.r.t. f
@@ -9,6 +9,10 @@ function [loss, gradients, p_margin] = hex_run(G, f, l, back_propagate)
 %   (background)
 %   back_propagate is boolean variable. Gradients are only evaluated when
 %   this variable is set true
+%   loss is log marginal likelihood of label
+%   gradients is derivatives of loss w.r.t f (raw scores)
+%   p_margin is normalized marginal probability of each variable
+%   p0 is the marginal probability of being background
 
 % AUTORIGHTS
 % ---------------------------------------------------------
@@ -39,17 +43,29 @@ c_m_cell = hex_run.pass_message(G, c_p_cell);
 
 % normalize the probability
 p_margin = Pr_margin / Z;
+p0 = 1 / Z;
 
 if ~back_propagate
-  gradients = 0;
+  gradients = zeros(num_v, 1);
   loss = 0;
   return
 else
   assert(length(l) == 1);
   assert(l >= 0 && l <= num_v);
-  loss = log(p_margin(l));
 end
 
 % Part 2: backward pass
+if l > 0
+  % clamp the potential table and re-run message pass
+  c_p_cell = hex_run.clamp_potential(c_p_cell, G, l);
+  c_m_cell = hex_run.pass_message(G, c_p_cell);
+  [Pr_joint_margin, ~, ~] = hex_run.marginalize(G, c_m_cell, c_p_cell);
+  
+  loss = log(p_margin(l));
+  gradients = Pr_joint_margin ./ Pr_margin(l) - Pr_margin / Z;
+else
+  loss = log(p0);
+  gradients = - Pr_margin / Z;
+end
 
 end
