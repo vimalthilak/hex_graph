@@ -1,4 +1,19 @@
 function hex_test
+% hex_test
+%   Test forward (inference) and backward (derivatives) of this HEX Graph
+%   implementation
+
+% AUTORIGHTS
+% ---------------------------------------------------------
+% Copyright (c) 2015, Ronghang Hu (huronghang@hotmail.com)
+% 
+% This file is part of the HEX Graph code and is available 
+% under the terms of the Simplified BSD License provided in 
+% LICENSE. Please retain this notice and LICENSE if you use 
+% this file (or any portion of it) in your project.
+% ---------------------------------------------------------
+
+all_test_passed = true;
 
 % Test example 1
 fprintf('############ Test Example 1 ############\n');
@@ -10,7 +25,7 @@ E_e = false(num_var);
 
 f = randn(num_var, 1);
 l = randperm(num_var + 1, 1) - 1;
-run_test_example(E_h, E_e, f, l);
+all_test_passed = all_test_passed & run_test_example(E_h, E_e, f, l);
 
 % Test example 2
 fprintf('############ Test Example 2 ############\n');
@@ -26,7 +41,7 @@ E_e = E_e | E_e';
 
 f = randn(num_var, 1);
 l = randperm(num_var + 1, 1) - 1;
-run_test_example(E_h, E_e, f, l);
+all_test_passed = all_test_passed & run_test_example(E_h, E_e, f, l);
 
 % Test example 3
 fprintf('############ Test Example 3 ############\n');
@@ -44,7 +59,33 @@ E_e = E_e | E_e';
 
 f = randn(num_var, 1);
 l = randperm(num_var + 1, 1) - 1;
-run_test_example(E_h, E_e, f, l);
+all_test_passed = all_test_passed & run_test_example(E_h, E_e, f, l);
+
+% Test example 4
+fprintf('############ Test Example 4 ############\n');
+num_var = 6;
+E_h = false(num_var);
+E_h(1, 2) = true;
+E_h(1, 3) = true;
+E_h(1, 4) = true;
+E_h(4, 5) = true;
+E_h(4, 6) = true;
+E_e = false(num_var);
+E_e(2, 4) = true;
+E_e(3, 4) = true;
+E_e(5, 6) = true;
+E_e = E_e | E_e';
+
+f = randn(num_var, 1);
+l = randperm(num_var + 1, 1) - 1;
+all_test_passed = all_test_passed & run_test_example(E_h, E_e, f, l);
+
+if all_test_passed
+  fprintf('\n');
+  fprintf('ALL TESTS PASSED\n');
+else
+  warning('SOME TEST FAILED\n');
+end
 
 end
 
